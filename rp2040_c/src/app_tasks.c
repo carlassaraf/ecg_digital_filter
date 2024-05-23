@@ -50,7 +50,7 @@ void solve_rfft(float32_t *src, float32_t *dst, uint32_t len) {
     // Corrijo las magnitudes
     arm_cmplx_mag_f32(raw, dst, len / 2);
     // Escalo la salida
-    for(uint32_t i = 0; i < len / 2; i++) { dst[i] /= (len / 2); }
+    for(uint32_t i = 0; i < len / 2; i++) { dst[i] /= len; }
 
     // Libero la memoria
     free(raw);
