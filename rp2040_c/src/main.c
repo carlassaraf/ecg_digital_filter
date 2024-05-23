@@ -25,6 +25,8 @@ int main(void) {
         if(sampling_is_done()) {
             // Resuelvo la RFFT
             solve_rfft(rfft_input, rfft_output, FFT_LEN);
+
+            puts("\n --- Nueva muestra! --\n");
             // Recorro el array de salida
             for(uint32_t i = 0; i < FFT_LEN / 2; i++) {
                 // Calculo la frecuencia de este bin
