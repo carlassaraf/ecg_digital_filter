@@ -1,4 +1,6 @@
 #include <malloc.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "app_tasks.h"
 
@@ -40,8 +42,13 @@ void app_init(void) {
 
 /**
  * @brief Funcion que resuelve la RFFT
+ * @param src puntero a muestras
+ * @param dst puntero a destino de RFFT
+ * @param bins puntero a frecuencias de RFFT
+ * @param len cantidad de muestras
+ * @param fs frecuencia de muestreo
 */
-void solve_rfft(float32_t *src, float32_t *dst, uint32_t len) {
+void solve_rfft(float32_t *src, float32_t *dst, float32_t *bins, uint32_t len, float32_t fs) {
     // Reservo memoria para el resultado de la RFFT
     float32_t *raw = (float32_t*) malloc(len * sizeof(float32_t));
     
@@ -49,11 +56,43 @@ void solve_rfft(float32_t *src, float32_t *dst, uint32_t len) {
     arm_rfft_fast_f32(&rfft_instance, src, raw, 0);
     // Corrijo las magnitudes
     arm_cmplx_mag_f32(raw, dst, len / 2);
-    // Escalo la salida
-    for(uint32_t i = 0; i < len / 2; i++) { dst[i] /= len; }
+    // Escalo la salida y saco las frecuencias
+    for(uint32_t i = 0; i < len / 2; i++) { 
+        dst[i] /= (len / 2); 
+        bins[i] = fs * i / len;
+    }
 
     // Libero la memoria
     free(raw);
+}
+
+/**
+ * @brief Mando datos por USB
+ * @param str cadena de texto con cadena
+ * @param data puntero a datos
+ * @param len cantidad de muestras
+*/
+void send_data(char *label, float32_t *data, uint32_t len) {
+    // Reservo memoria
+    char *str = (char*) malloc(8 * len + sizeof("{\"\":[]}\n") + sizeof(label));
+    // Inicio de cadena
+    sprintf(str, "{\"%s\":[", label);
+    // Agrego cada dato
+    for(uint32_t i = 0; i < len; i++) {
+        char aux[10];
+        // Veo si es el ultimo
+        if(i < len - 1) {
+            sprintf(aux, "%.2f,", data[i]);
+        }
+        else {
+            sprintf(aux, "%.2f", data[i]);
+        }
+        strcat(str, aux);
+    }
+
+    sprintf(str, "%s]}\n", str);
+    printf(str);
+    free(str);
 }
 
 /**
