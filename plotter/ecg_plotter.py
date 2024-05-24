@@ -64,6 +64,7 @@ class ECGPlotter():
         # Actualizar el gráfico cada 100 ms
         while dpg.is_dearpygui_running():
             self._update_plot()
+            self._refresh_ports()
             dpg.render_dearpygui_frame()
             time.sleep(0.1)
 
@@ -105,6 +106,15 @@ class ECGPlotter():
         dpg.set_item_height("ifft_window", 2 * height // 5)
         dpg.set_item_width("fft_window", width)
         dpg.set_item_height("fft_window", 2 * height // 5)
+
+    
+    def _refresh_ports(self):
+        # Listar los puertos seriales disponibles y crear el combo box
+        ports = [port.device for port in serial.tools.list_ports.comports()]
+        if ports:
+            dpg.configure_item("serial_combo", items=ports)
+        else:
+            dpg.configure_item("serial_combo", items=["No se encontraron puertos seriales."])
 
     
     def _port_selected_callback(self, sender, app_data):
