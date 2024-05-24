@@ -87,6 +87,24 @@ void dsp_notch_filter(float32_t *src, float32_t *dst, float32_t *bins, uint32_t 
 }
 
 /**
+ * @brief Funcion que resuelve la RFFT
+ * @param src puntero a muestras
+ * @param dst puntero a destino de RFFT
+ * @param bins puntero a tiempo de muestras
+ * @param len cantidad de muestras
+ * @param fs frecuencia de muestreo
+*/
+void dsp_irfft(float32_t *src, float32_t *dst, float32_t *bins, uint32_t len, float32_t fs) {
+     // Calculo la IRFFT
+    arm_rfft_fast_f32(&rfft_instance, src, dst, 1);
+    // Calculo los bins de tiempo y ajusto la amplitud
+    for(uint32_t i = 0; i < len; i++) {
+        bins[i] = i / fs;
+        dst[i] /= len; 
+    }
+}
+
+/**
  * @brief Mando datos por USB
  * @param str cadena de texto con cadena
  * @param data puntero a datos
