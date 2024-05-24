@@ -1,6 +1,7 @@
 import numpy as np
 import dearpygui.dearpygui as dpg
 import serial.tools.list_ports
+import serial
 import time
 
 class ECGPlotter():
@@ -30,6 +31,8 @@ class ECGPlotter():
                     dpg.add_combo(ports, label="Puertos", callback=self._port_selected_callback, tag="serial_combo")
                 else:
                     dpg.add_text("No se encontraron puertos seriales.")
+
+                dpg.add_text("", tag="serial_status")
 
             # Configuro una ventana para el ploteo de la FFT
             with dpg.child_window(tag="fft_window", width=self._width, height=(2 * self._heigth // 5)):
@@ -121,10 +124,15 @@ class ECGPlotter():
         """
         Obtiene el valor seleccionado del menu desplegable
         """
-        self._port = app_data
-        # Minimozo y muestro la otra ventana
-        dpg.configure_item("serial_window", minimized=True)
-        dpg.configure_item("fft_window", minimized=False)
+        if self._port:
+            self._port.close()
+            self._port = None
+        else:
+            try:
+                self._port = serial.Serial(app_data, 115200)
+                dpg.set_value(item="serial_status", value=f"Puerto {app_data} conectado con exito!")
+            except:
+                dpg.set_value(item="serial_status", value="Error conectando al puerto!")
 
     
     def _generate_fft_data(self, samples: int = 1024, sample_rate: int = 1000) -> tuple:
