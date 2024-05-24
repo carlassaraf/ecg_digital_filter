@@ -42,7 +42,7 @@ class ECGPlotter():
 
             # Configuro una ventana para el ploteo de la FFT
             with dpg.child_window(tag="fft_window", width=self._width, height=(2 * self._heigth // 5)):
-                with dpg.plot(label="FFT Plot", height=-1, width=-1):
+                with dpg.plot(label="FFT Plot", height=-1, width=-1, tag="fft_plot"):
                     x_axis = dpg.add_plot_axis(dpg.mvXAxis, label="Frequency [Hz]", tag="x_axis")
                     y_axis = dpg.add_plot_axis(dpg.mvYAxis, label="Magnitude [V]", tag="y_axis")
                     
@@ -50,8 +50,11 @@ class ECGPlotter():
                     dpg.add_line_series([], [], label="FFT (filtrada)", parent=y_axis, tag="fft_filtered")
 
                     # Fijar los límites de los ejes
-                    dpg.set_axis_limits("x_axis", 0, 500)
+                    dpg.set_axis_limits("x_axis", 0, 250)
                     dpg.set_axis_limits("y_axis", 0, 2)
+
+                    # Muestro la etiqueta
+                    dpg.add_plot_legend(parent="fft_plot")
             
 
             # Configuro una ventana para el ploteo de la FFT
@@ -76,9 +79,6 @@ class ECGPlotter():
     def run(self):
         # Actualizar el gráfico cada 100 ms
         while dpg.is_dearpygui_running():
-            self._update_plot()
-            self._refresh_ports()
-            dpg.render_dearpygui_frame()
             if self._port:
                 if self._port.in_waiting > 0:
                     # Leo y decodifico el JSON
@@ -87,6 +87,10 @@ class ECGPlotter():
                     self._freqs = data.get("freqs", self._freqs)
                     self._fft_real = data.get("fft_real", self._fft_real)
                     self._fft_filtered = data.get("fft_filtered", self._fft_filtered)
+
+            self._update_plot()
+            self._refresh_ports()
+            dpg.render_dearpygui_frame()
 
             time.sleep(0.1)
 
