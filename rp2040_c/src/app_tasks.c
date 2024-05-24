@@ -48,7 +48,7 @@ void app_init(void) {
  * @param len cantidad de muestras
  * @param fs frecuencia de muestreo
 */
-void solve_rfft(float32_t *src, float32_t *dst, float32_t *bins, uint32_t len, float32_t fs) {
+void dsp_rfft(float32_t *src, float32_t *dst, float32_t *bins, uint32_t len, float32_t fs) {
     // Reservo memoria para el resultado de la RFFT
     float32_t *raw = (float32_t*) malloc(len * sizeof(float32_t));
     
@@ -64,6 +64,26 @@ void solve_rfft(float32_t *src, float32_t *dst, float32_t *bins, uint32_t len, f
 
     // Libero la memoria
     free(raw);
+}
+
+/**
+ * @brief Funcion que aplica un filtro notch
+ * @param src puntero a muestras para filtrar
+ * @param dst puntero a destino del filtro
+ * @param bins puntero a frecuencias
+ * @param len cantidad de muestras
+ * @param f0 frecuencia de resonancia del filtro
+*/
+void dsp_notch_filter(float32_t *src, float32_t *dst, float32_t *bins, uint32_t len, float32_t f0) {
+    // Recorro todo el array de origen
+    for(uint32_t i = 0; i < len; i++) {
+        // Reviso si la frecuencia actual es la del filtro
+        if(bins[i] > (f0 - 2.0) && bins[i] < (f0 + 2.0)) {
+            // Mato armonicos en este rango
+            dst[i] = 0.0;
+        }
+        else { dst[i] = src[i]; }
+    }
 }
 
 /**
