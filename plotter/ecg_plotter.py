@@ -3,6 +3,7 @@ import dearpygui.dearpygui as dpg
 import serial.tools.list_ports
 import serial
 import time
+import json
 
 class ECGPlotter():
 
@@ -17,6 +18,11 @@ class ECGPlotter():
 
         # Puerto serial seleccionado
         self._port = None
+
+        # Datos para mostrar
+        self._freqs = [0.0]
+        self._fft_real= [0.0]
+        self._fft_filtered = [0.0]
 
         # Crear la ventana de selección de puerto serial
         with dpg.window(label="App", tag="app_window"):
@@ -37,11 +43,15 @@ class ECGPlotter():
             # Configuro una ventana para el ploteo de la FFT
             with dpg.child_window(tag="fft_window", width=self._width, height=(2 * self._heigth // 5)):
                 with dpg.plot(label="FFT Plot", height=-1, width=-1):
-                    dpg.add_plot_axis(dpg.mvXAxis, label="Frequency [Hz]")
-                    y_axis = dpg.add_plot_axis(dpg.mvYAxis, label="Magnitude [V]")
+                    x_axis = dpg.add_plot_axis(dpg.mvXAxis, label="Frequency [Hz]", tag="x_axis")
+                    y_axis = dpg.add_plot_axis(dpg.mvYAxis, label="Magnitude [V]", tag="y_axis")
                     
                     dpg.add_line_series([], [], label="FFT (real)", parent=y_axis, tag="fft_real")
                     dpg.add_line_series([], [], label="FFT (filtrada)", parent=y_axis, tag="fft_filtered")
+
+                    # Fijar los límites de los ejes
+                    dpg.set_axis_limits("x_axis", 0, 500)
+                    dpg.set_axis_limits("y_axis", 0, 2)
             
 
             # Configuro una ventana para el ploteo de la FFT
@@ -69,6 +79,15 @@ class ECGPlotter():
             self._update_plot()
             self._refresh_ports()
             dpg.render_dearpygui_frame()
+            if self._port:
+                if self._port.in_waiting > 0:
+                    # Leo y decodifico el JSON
+                    data = self._port.readline().decode().strip()
+                    data = json.loads(data)
+                    self._freqs = data.get("freqs", self._freqs)
+                    self._fft_real = data.get("fft_real", self._fft_real)
+                    self._fft_filtered = data.get("fft_filtered", self._fft_filtered)
+
             time.sleep(0.1)
 
         dpg.cleanup_dearpygui()
@@ -87,14 +106,9 @@ class ECGPlotter():
         signal = np.sin(2 * np.pi * 100 * random.random() * t)  # señal aleatoria
         dpg.set_value('ifft_filtered', [t, signal])
 
-        # Obtengo los puntos de la FFT
-        freqs, fft_magnitude = self._generate_fft_data()
         # Actualizar los valores del gráfico
-        dpg.set_value('fft_real', [freqs.tolist(), fft_magnitude.tolist()])
-        # Obtengo los puntos de la FFT
-        freqs, fft_magnitude = self._generate_fft_data()
-        # Actualizar los valores del gráfico
-        dpg.set_value('fft_filtered', [freqs.tolist(), fft_magnitude.tolist()])
+        dpg.set_value("fft_real", [self._freqs, self._fft_real])
+        dpg.set_value("fft_filtered", [self._freqs, self._fft_filtered])
 
     
     def _resize_window_callback(self, sender, app_data):
