@@ -44,64 +44,112 @@ void app_init(void) {
  * @brief Funcion que resuelve la RFFT
  * @param src puntero a muestras
  * @param dst puntero a destino de RFFT
- * @param bins puntero a frecuencias de RFFT
  * @param len cantidad de muestras
- * @param fs frecuencia de muestreo
 */
-void dsp_rfft(float32_t *src, float32_t *dst, float32_t *bins, uint32_t len, float32_t fs) {
-    // Reservo memoria para el resultado de la RFFT
-    float32_t *raw = (float32_t*) malloc(len * sizeof(float32_t));
-    
+void dsp_rfft(float32_t *src, float32_t *dst, uint32_t len) {
+    // Reservo memoria para el origen de la RFFT
+    float32_t *src_cpy = (float32_t*) malloc(len * sizeof(float32_t));
+    // Copio los datos de src
+    memcpy(src_cpy, src, len * sizeof(float32_t));
     // Calculo la RFFT
-    arm_rfft_fast_f32(&rfft_instance, src, raw, 0);
-    // Corrijo las magnitudes
-    arm_cmplx_mag_f32(raw, dst, len / 2);
-    // Escalo la salida y saco las frecuencias
-    for(uint32_t i = 0; i < len / 2; i++) { 
-        dst[i] /= (len / 2); 
-        bins[i] = fs * i / len;
-    }
-
+    arm_rfft_fast_f32(&rfft_instance, src_cpy, dst, 0);
     // Libero la memoria
-    free(raw);
+    free(src_cpy);
 }
 
 /**
- * @brief Funcion que aplica un filtro notch
- * @param src puntero a muestras para filtrar
- * @param dst puntero a destino del filtro
- * @param bins puntero a frecuencias
- * @param len cantidad de muestras
+ * @brief Funcion que aplica un filtro notch (sobre la RFFT compleja)
+ * @param src puntero de muestras complejas
  * @param f0 frecuencia de resonancia del filtro
+ * @param fs frecuencia de muestreo
+ * @param len cantidad de muestras
 */
-void dsp_notch_filter(float32_t *src, float32_t *dst, float32_t *bins, uint32_t len, float32_t f0) {
+void dsp_notch_filter(float32_t *src, float32_t f0, float32_t fs, uint32_t len) {
+    // Calculo el indice de la frecuencia del filtro
+    uint32_t f0_index = f0 / (fs / len);
     // Recorro todo el array de origen
-    for(uint32_t i = 0; i < len; i++) {
-        // Reviso si la frecuencia actual es la del filtro
-        if(bins[i] > (f0 - 2.0) && bins[i] < (f0 + 2.0)) {
-            // Mato armonicos en este rango
-            dst[i] = 0.0;
-        }
-        else { dst[i] = src[i]; }
+    for(uint32_t i = f0_index - 5; i < f0_index + 5; i++) { 
+        // Cero a la parte real y la imaginaria
+        src[2 * i] = 0.0;
+        src[2 * i + 1] = 0.0;
     }
+}
+
+/**
+ * @brief Normaliza la magnitud de la RFFT
+ * @param src puntero a RFFT
+ * @param dst puntero a RFFT normalizada
+ * @param len cantudad de muestras
+*/
+void dsp_rfft_normalize(float32_t *src, float32_t *dst, uint32_t len) {
+    // Copio el puntero original para no perderlo
+    float32_t *src_cpy = (float32_t*) malloc(len * sizeof(float32_t));
+    // Copio los datos de src
+    memcpy(src_cpy, src, len * sizeof(float32_t));
+    // Corrijo las magnitudes
+    arm_cmplx_mag_f32(src_cpy, dst, len / 2);
+    // Escalo la salida y saco las frecuencias
+    for(uint32_t i = 0; i < len / 2; i++) {  dst[i] /= (len / 2);  }
+    // Libero la memoria
+    free(src_cpy);
+}
+
+/**
+ * @brief Obtiene los bins de frecuencia para el espectro
+ * @param fs frecuencia de muestreo
+ * @param len cantidad de muestras
+ * @param dst puntero a array de frecuencias
+*/
+void dsp_rfft_get_freq_bins(float32_t fs, uint32_t len, float32_t *dst) {
+    // Calculo salto de frecuencia (las muestras originales son el doble)
+    const float32_t step = fs / (2 * len);
+    // Calculo cada valor
+    for(uint32_t i = 0; i < len; i++) { dst[i] = step * i; }
 }
 
 /**
  * @brief Funcion que resuelve la RFFT
  * @param src puntero a muestras
  * @param dst puntero a destino de RFFT
- * @param bins puntero a tiempo de muestras
  * @param len cantidad de muestras
- * @param fs frecuencia de muestreo
 */
-void dsp_irfft(float32_t *src, float32_t *dst, float32_t *bins, uint32_t len, float32_t fs) {
-     // Calculo la IRFFT
-    arm_rfft_fast_f32(&rfft_instance, src, dst, 1);
-    // Calculo los bins de tiempo y ajusto la amplitud
-    for(uint32_t i = 0; i < len; i++) {
-        bins[i] = i / fs;
-        dst[i] /= len; 
-    }
+void dsp_irfft(float32_t *src, float32_t *dst, uint32_t len) {
+    // Reservo memoria para el origen de la RFFT
+    float32_t *src_cpy = (float32_t*) malloc(len * sizeof(float32_t));
+    // Copio los datos de src
+    memcpy(src_cpy, src, len * sizeof(float32_t));
+    // Calculo la RFFT
+    arm_rfft_fast_f32(&rfft_instance, src_cpy, dst, 1);
+    // Libero la memoria
+    free(src_cpy);
+}
+
+/**
+ * @brief Normaliza la magnitud de la IRFFT
+ * @param src puntero a IRFFT
+ * @param dst puntero a IRFFT normalizada
+ * @param len cantudad de muestras
+*/
+void dsp_irfft_normalize(float32_t *src, float32_t *dst, uint32_t len) {
+    // Copio el puntero original para no perderlo
+    float32_t *src_cpy = (float32_t*) malloc(len * sizeof(float32_t));
+    // Copio los datos de src
+    memcpy(src_cpy, src, len * sizeof(float32_t));
+    // Escalo la salida y saco las frecuencias
+    for(uint32_t i = 0; i < len; i++) {  dst[i] /= (len);  }
+    // Libero la memoria
+    free(src_cpy);
+}
+
+/**
+ * @brief Obtiene los bins de tiempo para la IRFFT
+ * @param fs frecuencia de muestreo
+ * @param len cantidad de muestras
+ * @param dst puntero a array de tiempo
+*/
+void dsp_irfft_get_time_bins(float32_t fs, uint32_t len, float32_t *dst) {
+    // Calculo cada valor
+    for(uint32_t i = 0; i < len; i++) { dst[i] = i / fs; }
 }
 
 /**
@@ -164,7 +212,7 @@ static bool adc_start_conversion(repeating_timer_t *t) {
     // Contador de conversiones
     static uint32_t i = 0;
     // Leo el ADC, calculo la tension y saco el offset
-    rfft_input[i++] = 3.3 * adc_read() / 4095 - 1.65;
+    rfft_input[i++] = 3.3 * adc_read() / 4095;
     // Si ya se tomaron todas las muestras
     if(i == FFT_LEN) { 
         // Reinicio el contador
