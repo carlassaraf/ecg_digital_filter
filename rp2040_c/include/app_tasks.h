@@ -18,6 +18,7 @@ extern float32_t rfft_input[FFT_LEN];
 void app_init(void);
 void dsp_rfft(float32_t *src, float32_t *dst, uint32_t len);
 void dsp_notch_filter(float32_t *src, float32_t f0, float32_t fs, uint32_t len);
+void dsp_bp_filter(float32_t *src, float32_t f1, float32_t f2, float32_t fs, uint32_t len);
 void dsp_rfft_normalize(float32_t *src, float32_t *dst, uint32_t len);
 void dsp_rfft_get_freq_bins(float32_t fs, uint32_t len, float32_t *dst);
 void dsp_irfft(float32_t *src, float32_t *dst, uint32_t len);
