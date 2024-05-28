@@ -5,6 +5,8 @@
 
 #include "app_tasks.h"
 
+#include "hardware/pwm.h"
+
 /**
  * @brief Programa principal
 */
@@ -23,6 +25,13 @@ int main(void) {
     
     app_init();
 
+    gpio_set_function(16, GPIO_FUNC_PWM);
+    pwm_config config = pwm_get_default_config();
+    pwm_config_set_clkdiv(&config, 125);
+    pwm_config_set_wrap(&config, 20000);
+    pwm_init(0, &config, true);
+    pwm_set_gpio_level(16, 10000);
+
     while (true) {
 
         // Verifico si se termino la conversion
@@ -35,11 +44,11 @@ int main(void) {
             dsp_rfft_get_freq_bins(FS, sizeof(freqs) / sizeof(float32_t), freqs);
             // Aplico el filtro notch sobre la original
             dsp_notch_filter(rfft_output_raw, 50.0, FS, sizeof(rfft_output_raw) / sizeof(float32_t));
+            dsp_bp_filter(rfft_output_raw, 25.0, 100.0, FS, sizeof(rfft_output_raw) / sizeof(float32_t));
             // Arreglo las magnitudes
             dsp_rfft_normalize(rfft_output_raw, rfft_filtered, sizeof(rfft_output_raw) / sizeof(float32_t));
             // Resuelvo la IRFFT filtrada y normalizo la salida
-            dsp_irfft(rfft_filtered, irfft_filtered, sizeof(irfft_filtered) / sizeof(float32_t));
-            // dsp_irfft_normalize(irfft_filtered, irfft_filtered, sizeof(irfft_filtered) / sizeof(float32_t));
+            dsp_irfft(rfft_output_raw, irfft_filtered, sizeof(irfft_filtered) / sizeof(float32_t));
             // Obtengo los bins de tiempo
             dsp_irfft_get_time_bins(FS, sizeof(time) / sizeof(float32_t), time);
             // Mando los resultados
