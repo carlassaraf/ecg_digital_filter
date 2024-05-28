@@ -26,7 +26,7 @@ int main(void) {
         // Verifico si se termino la conversion
         if(sampling_is_done()) {
             // Mando las muestras
-            send_data("irfft_real", rfft_input, sizeof(rfft_input) / sizeof(float32_t));
+            send_data("ifft_real", rfft_input, sizeof(rfft_input) / sizeof(float32_t));
             // Resuelvo la RFFT
             dsp_rfft(rfft_input, rfft_output, freqs, FFT_LEN, FS);
             // Aplico el filtro notch
@@ -36,7 +36,7 @@ int main(void) {
             // Mando las muestras
             send_data("time", time, sizeof(time) / sizeof(float32_t));
             // Mando las muestras
-            send_data("irfft_filtered", rfft_input, sizeof(rfft_input) / sizeof(float32_t));
+            send_data("ifft_filtered", rfft_input, sizeof(rfft_input) / sizeof(float32_t));
             // Mando los resultados
             send_data("freqs", freqs, sizeof(freqs) / sizeof(float32_t));
             send_data("fft_real", rfft_output, sizeof(rfft_output) / sizeof(float32_t));
