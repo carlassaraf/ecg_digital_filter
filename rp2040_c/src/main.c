@@ -11,26 +11,32 @@
  * @brief Programa principal
 */
 int main(void) {
-    // Array para el resultado corregido de la RFFT
+    // Resultado complejo de RFFT
     float32_t rfft_output_raw[FFT_LEN] = {0};
+    // Resultado normalizado de RFFT 
     float32_t rfft_output_normalized[FFT_LEN / 2] = {0};
+    // Resultado filtrado complejo de RFFT
     float32_t rfft_filtered[FFT_LEN / 2] = {0};
+    // Resultado de la IRFFT filtrada
     float32_t irfft_filtered[FFT_LEN] = {0};
+    // Valores de frecuencia
     float32_t freqs[FFT_LEN / 2] = {0};
+    // Valores de tiempo
     float32_t time[FFT_LEN] = {0};
 
     // Inicializacion de USB
     stdio_init_all();
     sleep_ms(2000);
-    
+
+    // Inicializacion de perifericos y otros
     app_init();
 
     gpio_set_function(16, GPIO_FUNC_PWM);
     pwm_config config = pwm_get_default_config();
     pwm_config_set_clkdiv(&config, 125);
-    pwm_config_set_wrap(&config, 20000);
+    pwm_config_set_wrap(&config, 10000);
     pwm_init(0, &config, true);
-    pwm_set_gpio_level(16, 10000);
+    pwm_set_gpio_level(16, 5000);
 
     while (true) {
 
