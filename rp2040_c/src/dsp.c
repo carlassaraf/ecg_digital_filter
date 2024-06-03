@@ -79,7 +79,7 @@ void dsp_bp_filter(float32_t *src, float32_t f1, float32_t f2, float32_t fs, uin
  * @brief Normaliza la magnitud de la RFFT
  * @param src puntero a RFFT
  * @param dst puntero a RFFT normalizada
- * @param len cantudad de muestras
+ * @param len cantidad de muestras
 */
 void dsp_rfft_normalize(float32_t *src, float32_t *dst, uint32_t len) {
     // Copio el puntero original para no perderlo
@@ -89,7 +89,7 @@ void dsp_rfft_normalize(float32_t *src, float32_t *dst, uint32_t len) {
     // Corrijo las magnitudes
     arm_cmplx_mag_f32(src_cpy, dst, len / 2);
     // Escalo la salida y saco las frecuencias
-    for(uint32_t i = 0; i < len / 2; i++) {  dst[i] /= (len / 2);  }
+    for(uint32_t i = 0; i < len / 2; i++) {  dst[i] /= (len / 4);  }
     // Libero la memoria
     free(src_cpy);
 }
