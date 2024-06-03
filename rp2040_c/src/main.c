@@ -31,13 +31,6 @@ int main(void) {
     // Inicializacion de perifericos y otros
     app_init();
 
-    gpio_set_function(16, GPIO_FUNC_PWM);
-    pwm_config config = pwm_get_default_config();
-    pwm_config_set_clkdiv(&config, 125);
-    pwm_config_set_wrap(&config, 10000);
-    pwm_init(0, &config, true);
-    pwm_set_gpio_level(16, 5000);
-
     while (true) {
 
         // Verifico si se termino la conversion
