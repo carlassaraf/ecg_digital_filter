@@ -43,7 +43,7 @@ void app_init(void) {
 */
 void send_data(char *label, float32_t *data, uint32_t len) {
     // Reservo memoria
-    char *str = (char*) malloc(8 * len + sizeof("{\"\":[]}\n") + sizeof(label));
+    char *str = (char*) malloc(12 * len + sizeof("{\"\":[]}\n") + sizeof(label));
     // Inicio de cadena
     sprintf(str, "{\"%s\":[", label);
     // Agrego cada dato
@@ -51,10 +51,10 @@ void send_data(char *label, float32_t *data, uint32_t len) {
         char aux[10];
         // Veo si es el ultimo
         if(i < len - 1) {
-            sprintf(aux, "%.2f,", data[i]);
+            sprintf(aux, "%f,", data[i]);
         }
         else {
-            sprintf(aux, "%.2f", data[i]);
+            sprintf(aux, "%f", data[i]);
         }
         strcat(str, aux);
     }
