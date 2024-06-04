@@ -53,7 +53,7 @@ class ECGPlotter():
 
                     # Fijar los límites de los ejes
                     dpg.set_axis_limits("freq_axis", 0, 250)
-                    dpg.set_axis_limits("fft_axis", 0, 2)
+                    dpg.set_axis_limits("fft_axis", 0, 3.5)
 
                     # Muestro la etiqueta
                     dpg.add_plot_legend(parent="fft_plot")
@@ -69,7 +69,7 @@ class ECGPlotter():
                     dpg.add_line_series([], [], label="IFFT (filtrada)", parent=y_axis, tag="ifft_filtered")
 
                     # Fijar los límites de los ejes
-                    dpg.set_axis_limits("ifft_axis", -2.5, 2.5)
+                    dpg.set_axis_limits("ifft_axis", -3.5, 3.5)
 
                     # Muestro la etiqueta
                     dpg.add_plot_legend(parent="ifft_plot")
