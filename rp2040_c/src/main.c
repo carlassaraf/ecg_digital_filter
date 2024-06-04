@@ -31,6 +31,15 @@ int main(void) {
     // Inicializacion de perifericos y otros
     app_init();
 
+    // PWM para testear (10Hz, 50% duty cycle)
+    const uint8_t pwm_gpio = 16; 
+    gpio_set_function(pwm_gpio, GPIO_FUNC_PWM);
+    pwm_config config = pwm_get_default_config();
+    pwm_config_set_clkdiv(&config, 250.0);
+    pwm_config_set_wrap(&config, 50000);
+    pwm_init(pwm_gpio_to_slice_num(pwm_gpio), &config, true);
+    pwm_set_gpio_level(pwm_gpio, 25000);
+
     while (true) {
 
         // Verifico si se termino la conversion
