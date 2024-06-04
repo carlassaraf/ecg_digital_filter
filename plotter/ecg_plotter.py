@@ -52,7 +52,7 @@ class ECGPlotter():
                     dpg.add_line_series([], [], label="FFT (filtrada)", parent=y_axis, tag="fft_filtered")
 
                     # Fijar los límites de los ejes
-                    dpg.set_axis_limits("freq_axis", 0, 250)
+                    dpg.set_axis_limits("freq_axis", 0, 500)
                     dpg.set_axis_limits("fft_axis", 0, 3.5)
 
                     # Muestro la etiqueta
