@@ -29,7 +29,7 @@ class ECGPlotter():
         # Crear la ventana de selección de puerto serial
         with dpg.window(label="App", tag="app_window"):
 
-            with dpg.child_window(tag="serial_window", width=self._width, height=(self._heigth // 5)):
+            with dpg.child_window(tag="serial_window"):
                 dpg.add_text("Seleccione un puerto serial:")
                 
                 # Listar los puertos seriales disponibles y crear el combo box
@@ -43,7 +43,7 @@ class ECGPlotter():
                 dpg.add_text("", tag="serial_status")
 
             # Configuro una ventana para el ploteo de la FFT
-            with dpg.child_window(tag="fft_window", width=self._width, height=(3 * self._heigth // 7)):
+            with dpg.child_window(tag="fft_window"):
                 with dpg.plot(label="FFT Plot", height=-1, width=-1, tag="fft_plot"):
                     x_axis = dpg.add_plot_axis(dpg.mvXAxis, label="Frequency [Hz]", tag="freq_axis")
                     y_axis = dpg.add_plot_axis(dpg.mvYAxis, label="Magnitude [V]", tag="fft_axis")
@@ -60,7 +60,7 @@ class ECGPlotter():
             
 
             # Configuro una ventana para el ploteo de la FFT
-            with dpg.child_window(tag="ifft_window", width=self._width, height=(3 * self._heigth // 7)):
+            with dpg.child_window(tag="ifft_window"):
                 with dpg.plot(label="IFFT Plot", height=-1, width=-1, tag="ifft_plot"):
                     x_axis = dpg.add_plot_axis(dpg.mvXAxis, label="Time [s]", tag="time_axis")
                     y_axis = dpg.add_plot_axis(dpg.mvYAxis, label="Magnitude [V]", tag="ifft_axis")
@@ -125,7 +125,7 @@ class ECGPlotter():
         Callback para ajustar el tamaño de la ventana 
         """
         # Obtengo las dimensiones del viewport y las configuro para la ventana
-        width, height = dpg.get_viewport_client_width(), dpg.get_viewport_client_height()
+        width, height = dpg.get_viewport_client_width() - 22.5, dpg.get_viewport_client_height() - 50
         dpg.set_item_width("serial_window", width)
         dpg.set_item_height("serial_window", height // 7)
         dpg.set_item_width("fft_window", width)
