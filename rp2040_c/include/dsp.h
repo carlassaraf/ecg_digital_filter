@@ -5,7 +5,7 @@
 // Cantidad de muestras
 #define FFT_LEN         1024UL
 // Frecuencia de muestreo
-#define FS              500.0
+#define FS              1000.0
 // Tiempo de muestreo
 #define TS              (1 / FS)
 
